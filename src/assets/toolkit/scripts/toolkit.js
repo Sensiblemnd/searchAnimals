@@ -75,7 +75,9 @@ require('imports?jQuery=jquery!bootpag/lib/jquery.bootpag.min.js');
 						q: searchTerm,
 						image_type:'photo',
 						order: 'popular',
-						orientation: 'horizontal'
+						orientation: 'horizontal',
+						page: 1,
+						per_page: 20
 					}
 			})
 			.done(function( json ) {
@@ -101,7 +103,7 @@ require('imports?jQuery=jquery!bootpag/lib/jquery.bootpag.min.js');
 					$('.results').append(that.buildPagination());
 					/*activate the pagination*/
 						$('#page-selection').bootpag({
-							total: Math.ceil(500/20),
+							total: Math.ceil(json.totalHits/20),
 							page: 5,
 							maxVisible: 6,
 							href: '#pro-page-{{number}}',
