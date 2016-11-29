@@ -5,7 +5,7 @@
 const $ = require('jquery');
 require('imports?jQuery=jquery!bootstrap-sass');
 require('imports?jQuery=jquery!bootpag/lib/jquery.bootpag.min.js');
-
+require('imports?jQuery=jquery!jquery-loadingModal/js/jquery.loadingModal.js');
 
 
 
@@ -27,8 +27,9 @@ require('imports?jQuery=jquery!bootpag/lib/jquery.bootpag.min.js');
 
 	};
 	config.init();
+
 	const  log = {
-	  debug: function(content){
+	  debug (content){
 			if ((window.console && window.console.log) && config.debug){
 				console.log(content);
 			}
@@ -36,17 +37,20 @@ require('imports?jQuery=jquery!bootpag/lib/jquery.bootpag.min.js');
 	};
 
 	const app = {
-		init: function() {
+		init () {
 			this.eventListeners();
 
 			// data.success(function(json){
 			// 	console.log(json);
 			// });
+
+
+
 		},
-		buildPagination: function (){
+		buildPagination (){
 			return `<div id="page-selection"></div>`
 		},
-		imageTemplate: function(obj){
+		imageTemplate (obj){
 
 			return `<div class="col-xs-6 col-md-3 result">
 				<a href="#" class="thumbnail">
@@ -54,19 +58,22 @@ require('imports?jQuery=jquery!bootpag/lib/jquery.bootpag.min.js');
 				</a>
 			</div>`
 		},
-		eventListeners: function (){
+		eventListeners (){
 			let _this=this;
 			$('.search').submit(function(e){
 				e.preventDefault();
 				//search
 				if($('.search-input').val().length > 0) {
 					_this.getImages($('.search-input').val());
+				}else {
+
 				}
 
 			});
 		},
-		getImages: function(searchTerm){
+		getImages (searchTerm){
 				let that = this;
+				$('body').loadingModal({text: 'Showing loader animations...', 'animation': 'rotatingPlane'});
 
 			$.getJSON({
 					url: config.url,
@@ -81,6 +88,7 @@ require('imports?jQuery=jquery!bootpag/lib/jquery.bootpag.min.js');
 					}
 			})
 			.done(function( json ) {
+				$('body').loadingModal('hide');
 				//clear results
 				if($('.results').find('.result').length>0) {
 
