@@ -67,9 +67,8 @@ require('imports?jQuery=jquery!jquery-loadingModal/js/jquery.loadingModal.js');
 				e.preventDefault();
 				//search
 				//destroy Bootpag and remove
-
-					$('#pagination').html("").show();
-
+				$('#pagination').unbind('page');
+				$('#pagination').html("").show();
 				if($('.search-input').val().length > 0) {
 					_this.getImages($('.search-input').val());
 				}
@@ -110,7 +109,7 @@ require('imports?jQuery=jquery!jquery-loadingModal/js/jquery.loadingModal.js');
 
 						that.buildPagination(json,page);
 			}).fail(function() {
-		    	console.log( "error" );
+		    	log.debug( "error" );
 		 	});
 		}
 	};
