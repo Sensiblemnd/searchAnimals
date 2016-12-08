@@ -8,8 +8,6 @@ require('imports?jQuery=jquery!bootpag/lib/jquery.bootpag.min.js');
 require('imports?jQuery=jquery!jquery-loadingModal/js/jquery.loadingModal.js');
 
 
-
-
 (function () {
    'use strict';
 
@@ -27,7 +25,6 @@ require('imports?jQuery=jquery!jquery-loadingModal/js/jquery.loadingModal.js');
 
 	};
 	config.init();
-
 	const  log = {
 	  debug (content){
 			if ((window.console && window.console.log) && config.debug){
@@ -35,20 +32,26 @@ require('imports?jQuery=jquery!jquery-loadingModal/js/jquery.loadingModal.js');
 			}
 		}
 	};
-
 	const app = {
 		init () {
 			this.eventListeners();
-
-			// data.success(function(json){
-			// 	console.log(json);
-			// });
-
-
-
 		},
-		buildPagination (){
-			return `<div id="page-selection"></div>`
+		buildPagination (json,num){
+			let that = this;
+			if($(".bootpag").length === 0) {
+				$('#pagination').bootpag({
+					total: Math.ceil(json.totalHits/20),
+					page: 1,
+					maxVisible: 6,
+					href: '#pro-page-{{number}}',
+					leaps: false,
+					next: 'next',
+					prev: 'prev'
+				}).on("page", function(event, /* page number here */ num){
+					that.getImages($('.search-input').val(),num);
+				});
+
+			}
 		},
 		imageTemplate (obj){
 
@@ -56,25 +59,36 @@ require('imports?jQuery=jquery!jquery-loadingModal/js/jquery.loadingModal.js');
 				<a href="#" class="thumbnail">
 					<img src="${obj.previewURL}" alt="${obj.tags}">
 				</a>
-			</div>`
+			</div>`;
 		},
 		eventListeners (){
 			let _this=this;
 			$('.search').submit(function(e){
 				e.preventDefault();
 				//search
+				//destroy Bootpag and remove
+
+					$('#pagination').html("").show();
+
 				if($('.search-input').val().length > 0) {
 					_this.getImages($('.search-input').val());
-				}else {
-
 				}
 
 			});
 		},
-		getImages (searchTerm){
-				let that = this;
-				$('body').loadingModal({text: 'Showing loader animations...', 'animation': 'rotatingPlane'});
+		clearResults: function(){
+			if($('.results').find('.result').length>0) {
+					$('.results').html('');
+					$('.results').trigger('search');
+			}else{
+				$('.results').trigger('search');
+			}
 
+		},
+		getImages (searchTerm,page = 1){
+				let that = this;
+				$('body').loadingModal({text: 'Searching...', 'animation': 'rotatingPlane'});
+			that.clearResults();
 			$.getJSON({
 					url: config.url,
 					data: {
@@ -83,46 +97,18 @@ require('imports?jQuery=jquery!jquery-loadingModal/js/jquery.loadingModal.js');
 						image_type:'photo',
 						order: 'popular',
 						orientation: 'horizontal',
-						page: 1,
+						page: page,
 						per_page: 20
 					}
 			})
 			.done(function( json ) {
 				$('body').loadingModal('hide');
-				//clear results
-				if($('.results').find('.result').length>0) {
 
-					$('.results').find('.result').fadeOut('fast',function(){
-					$('#page-selection').unbind('page');
+							$.each(json.hits, function(key, value) {
+								$('.results').append(that.imageTemplate(value));
+							});
 
-					$('.results').html('');
-					$.each(json.hits, function(key, value) {
-						$('.results').append(that.imageTemplate(value));
-					});
-
-					$('.results').append(that.buildPagination());
-
-				});
-				}else{
-					$('.results').html('');
-					$.each(json.hits, function(key, value) {
-						$('.results').append(that.imageTemplate(value));
-					});
-					$('.results').append(that.buildPagination());
-					/*activate the pagination*/
-						$('#page-selection').bootpag({
-							total: Math.ceil(json.totalHits/20),
-							page: 5,
-							maxVisible: 6,
-							href: '#pro-page-{{number}}',
-							leaps: false,
-							next: 'next',
-							prev: 'prev'
-						}).on("page", function(event, /* page number here */ num){
-							$("#content").html("Insert content"); // some ajax content loading...
-						});
-
-				}
+						that.buildPagination(json,page);
 			}).fail(function() {
 		    	console.log( "error" );
 		 	});
